@@ -1,0 +1,23 @@
+{
+  "name": "youtubeplaybot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Theia0382/YoutubePlayBot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Theia0382/YoutubePlayBot/issues"
+  },
+  "homepage": "https://github.com/Theia0382/YoutubePlayBot#readme",
+  "dependencies": {
+    "discord.js": "^14.6.0"
+  }
+}
