@@ -10,7 +10,7 @@ module.exports =
             return;
         }
 
-        const command = interaction.client.command.get( interaction.commandName );
+        const command = interaction.client.commands.get( interaction.commandName );
 
         if ( !command )
         {
