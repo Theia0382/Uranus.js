@@ -1,8 +1,11 @@
-const { createAudioPlayer, createAudioResource, AudioPlayerStatus } = require( '@discordjs/voice' );
+const { createAudioPlayer, createAudioResource, AudioPlayerStatus, StreamType } = require( '@discordjs/voice' );
 const ytdl = require( 'ytdl-core' );
 const fs = require( 'fs' );
 const join = require( 'path' ).join;
 const EventEmitter = require( 'events' );
+const FfmpegCommand = require( 'fluent-ffmpeg' );
+
+new FfmpegCommand( ).setFfmpegPath( join( __dirname, '../node_modules/ffmpeg-static/ffmpeg.exe' ) );
 
 const audioPlayer = [ ];
 const playlist = [ ];
@@ -17,10 +20,6 @@ class Audio extends EventEmitter
         {
             audioPlayer[ guildId ] = createAudioPlayer( );
 
-            audioPlayer[ guildId ].on('stateChange', (oldState, newState) => {
-                console.log(`Audio player transitioned from ${oldState.status} to ${newState.status}`);
-            });
-    
             audioPlayer[ guildId ].on( AudioPlayerStatus.Idle, ( ) =>
             {
                 if( !stopped[ this.id ] )
@@ -66,18 +65,20 @@ class Audio extends EventEmitter
 
         stopped[ this.id ] = false;
 
-        const download = ytdl( this.playlist[ 0 ], { filter : 'audioonly', quality : 'highestaudio' } );
-        download.pipe( fs.createWriteStream( join( __dirname, `../temp/${this.id}.mp3` ) ) );
+        const download = ytdl( this.playlist[ 0 ], { filter : format => format.container === 'mp4', quality : 'highestaudio' } );
+        new FfmpegCommand( download )
+            .audioCodec('libopus')
+            .audioFilters('volume=0.1')
+            .format('ogg')
+            .pipe( fs.createWriteStream( join( __dirname, `../temp/${this.id}.ogg` ) ) )
+            .on( 'finish', ( ) =>
+            {
+                const stream = fs.createReadStream( join( __dirname, `../temp/${this.id}.ogg` ) );
+                const resource = createAudioResource( stream, { inputType : StreamType.OggOpus } );
+                this.player.play( resource );
 
-        download.once( 'end', ( ) =>
-        {
-            const stream = fs.createReadStream( join( __dirname, `../temp/${this.id}.mp3` ) );
-            const resource = createAudioResource( stream, { inlineVolume : true } );
-            resource.volume.setVolume( 0.1 );
-            this.player.play( resource );
-
-            this.emit( 'playing' );
-        } );
+                this.emit( 'playing' );
+            } );
     }
 
     _getNextResource( )
