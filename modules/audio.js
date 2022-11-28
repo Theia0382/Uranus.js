@@ -1,51 +1,178 @@
-const { createAudioPlayer, createAudioResource } = require( '@discordjs/voice' );
+const { createAudioPlayer, createAudioResource, AudioPlayerStatus } = require( '@discordjs/voice' );
 const ytdl = require( 'ytdl-core' );
-const fs = require('fs');
-const path = require( 'path' );
+const fs = require( 'fs' );
+const join = require( 'path' ).join;
+const EventEmitter = require( 'events' );
 
 const audioPlayer = [ ];
 const playlist = [ ];
+const stopped = [ ];
 
-function getAudioPlayer( guildID )
+
+class Audio extends EventEmitter
 {
-    if ( !audioPlayer[ guildID ] )
+    __getAudioPlayer( guildId )
     {
-        audioPlayer[ guildID ] = createAudioPlayer( );
+        if ( !audioPlayer[ guildId ] )
+        {
+            audioPlayer[ guildId ] = createAudioPlayer( );
+
+            audioPlayer[ guildId ].on('stateChange', (oldState, newState) => {
+                console.log(`Audio player transitioned from ${oldState.status} to ${newState.status}`);
+            });
+    
+            audioPlayer[ guildId ].on( AudioPlayerStatus.Idle, ( ) =>
+            {
+                if( !stopped[ this.id ] )
+                {
+                    this._getNextResource( );
+                }
+            } );
+        }
+        
+        return audioPlayer[ guildId ];
     }
     
-    return audioPlayer[ guildID ];
-}
-
-function getPlaylist( guildID )
-{
-    if ( !playlist[ guildID ] )
+    __getPlaylist( guildId )
     {
-        playlist[ guildID ] = [ ];
+        if ( !playlist[ guildId ] )
+        {
+            playlist[ guildId ] = [ ];
+        }
+    
+        return playlist[ guildId ];
     }
 
-    return playlist[ guildID ];
-}
 
-async function play( guildID )
-{
-    const url = getPlaylist( guildID )[ 0 ];
-    console.log( url );
-    const player = getAudioPlayer( guildID );
-    const download = ytdl( url, { filter : 'audioonly', quality : 'highestaudio' } );
-    download.pipe( fs.createWriteStream( path.join( __dirname, `../temp/${guildID}.mp3` ) ) );
-
-    download.once( 'end', ( ) =>
+    constructor( guildId )
     {
-        const stream = fs.createReadStream( path.join( __dirname, `../temp/${guildID}.mp3` ) );
-        const resource = createAudioResource( stream, { inlineVolume : true } );
-        resource.volume.setVolume( 0.5 );
-        player.play( resource );
-    } );
+        super( );
+        this.id = guildId;
+        this.player = this.__getAudioPlayer( guildId );
+        this.playlist = this.__getPlaylist( guildId );
+        stopped[ this.id ] = false;
+    }
+
+    _play( )
+    {
+        if( !this.playlist[ 0 ] )
+        {
+            const error = new Error( );
+            error.message = '재생목록이 비어있습니다.';
+            error.code = 'noplaylist';
+            this.emit( 'error', error );
+            return;
+        }
+
+        stopped[ this.id ] = false;
+
+        const download = ytdl( this.playlist[ 0 ], { filter : 'audioonly', quality : 'highestaudio' } );
+        download.pipe( fs.createWriteStream( join( __dirname, `../temp/${this.id}.mp3` ) ) );
+
+        download.once( 'end', ( ) =>
+        {
+            const stream = fs.createReadStream( join( __dirname, `../temp/${this.id}.mp3` ) );
+            const resource = createAudioResource( stream, { inlineVolume : true } );
+            resource.volume.setVolume( 0.1 );
+            this.player.play( resource );
+
+            this.emit( 'playing' );
+        } );
+    }
+
+    _getNextResource( )
+    {
+        this.playlist.shift( );
+
+        if( this.playlist[ 0 ] )
+        {
+            this._play( );
+        }
+        else
+        {
+            this.stop( );
+        }
+    }
+
+    play( url )
+    {
+        if( url )
+        {
+            if ( ytdl.validateURL( url ) )
+            {
+                this.playlist.unshift( url );
+            }
+            else
+            {
+                const error = new Error( );
+                error.message = `${url} 에서 비디오 ID를 찾을 수 없습니다.`;
+                error.code = 'invalidurl';
+                this.emit( 'error', error );
+                return;
+            }
+        }
+
+        this._play( );
+    }
+
+    add( url )
+    {
+        if ( ytdl.validateURL( url ) )
+        {
+            this.playlist.push( url );
+            this.emit( 'added' );
+        }
+        else
+        {
+            const error = new Error( );
+            error.message = `${url} 에서 비디오 ID를 찾을 수 없습니다.`;
+            error.code = 'invalidurl';
+            this.emit( 'error', error );
+        }
+    }
+
+    pause( )
+    {
+        if( this.player.pause( ) )
+        {
+            this.emit( 'pause' );
+        }
+        else
+        {
+            this.emit( 'cannotpause' );
+        }
+    }
+
+    unpause( )
+    {
+        if( this.player.unpause( ) )
+        {
+            this.emit( 'unpause' );
+        }
+        else
+        {
+            this.emit( 'cannotunpause' );
+        }
+    }
+
+    skip( )
+    {
+        this._getNextResource( );
+    }
+
+    stop( )
+    {
+        stopped[ this.id ] = true;
+        this.player.stop( );
+        this.emit( 'stopped' );
+    }
+
+    reset( )
+    {
+        this.playlist.length = 0;
+        this.player.stop( );
+        this.emit( 'reset' );
+    }
 }
 
-module.exports =
-{
-    getAudioPlayer,
-    getPlaylist,
-    play
-}
+module.exports = Audio;

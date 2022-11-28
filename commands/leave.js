@@ -8,10 +8,12 @@ module.exports =
         .setDescription( '음성 채널에서 나갑니다.' ),
     async execute( interaction )
     {
+        await interaction.deferReply( );
+
         const connection = await getVoiceConnection( interaction.guildId );
 
         await connection.destroy( );
 
-        await interaction.reply( `음성 채널에서 나갑니다.` );
+        await interaction.editReply( `음성 채널에서 나갑니다.` );
     }
 };
