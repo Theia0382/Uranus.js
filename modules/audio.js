@@ -67,6 +67,7 @@ class Audio extends EventEmitter
 
         const download = ytdl( this.playlist[ 0 ], { filter : format => format.container === 'mp4', quality : 'highestaudio' } );
         new FfmpegCommand( download )
+            .noVideo( )
             .audioCodec('libopus')
             .audioFilters('volume=0.1')
             .format('ogg')
@@ -171,7 +172,7 @@ class Audio extends EventEmitter
     reset( )
     {
         this.playlist.length = 0;
-        this.player.stop( );
+        this.stop( );
         this.emit( 'reset' );
     }
 }
