@@ -10,9 +10,17 @@ module.exports =
     {
         await interaction.deferReply( );
 
-        const connection = await getVoiceConnection( interaction.guildId );
+        const connection = getVoiceConnection( interaction.guildId );
 
-        await connection.destroy( );
+        if ( connection )
+        {
+            connection.destroy( );
+        }
+        else
+        {
+            await interaction.editReply( '음성 채널에 참가하고 있지 않습니다.' );
+            return;
+        }
 
         await interaction.editReply( `음성 채널에서 나갑니다.` );
     }
