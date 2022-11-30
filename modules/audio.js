@@ -65,20 +65,22 @@ class Audio extends EventEmitter
 
         stopped[ this.id ] = false;
 
-        const download = ytdl( this.playlist[ 0 ], { filter : format => format.container === 'mp4', quality : 'highestaudio' } );
+        const download = ytdl( this.playlist[ 0 ].url, { filter : format => format.container === 'mp4', quality : 'highestaudio' } );
+
         new FfmpegCommand( download )
             .noVideo( )
             .audioCodec('libopus')
             .audioFilters('volume=0.1')
             .format('ogg')
-            .pipe( fs.createWriteStream( join( __dirname, `../temp/${this.id}.ogg` ) ) )
+            .pipe( fs.createWriteStream( join( __dirname, `../temp/${ this.id }.ogg` ) ) )
             .on( 'finish', ( ) =>
             {
-                const stream = fs.createReadStream( join( __dirname, `../temp/${this.id}.ogg` ) );
+                const stream = fs.createReadStream( join( __dirname, `../temp/${ this.id }.ogg` ) );
                 const resource = createAudioResource( stream, { inputType : StreamType.OggOpus } );
                 this.player.play( resource );
 
                 this.emit( 'playing' );
+                return;
             } );
     }
 
@@ -89,10 +91,12 @@ class Audio extends EventEmitter
         if( this.playlist[ 0 ] )
         {
             this._play( );
+            return;
         }
         else
         {
             this.stop( );
+            return;
         }
     }
 
@@ -102,34 +106,57 @@ class Audio extends EventEmitter
         {
             if ( ytdl.validateURL( url ) )
             {
-                this.playlist.unshift( url );
+                ytdl.getBasicInfo( url, { lang : 'kr' } ).then( ( videoInfo ) =>
+                {
+                    this.playlist.unshift(
+                    { 
+                        url : url,
+                        info : videoInfo.videoDetails
+                    } );
+
+                    this._play( );
+                    return;
+                } );
             }
             else
             {
                 const error = new Error( );
-                error.message = `${url} 에서 비디오 ID를 찾을 수 없습니다.`;
+                error.message = `${ url } 에서 비디오 ID를 찾을 수 없습니다.`;
                 error.code = 'invalidurl';
                 this.emit( 'error', error );
                 return;
             }
         }
-
-        this._play( );
+        else
+        {
+            this._play( );
+            return;
+        }
     }
 
     add( url )
     {
         if ( ytdl.validateURL( url ) )
         {
-            this.playlist.push( url );
-            this.emit( 'added' );
+            ytdl.getBasicInfo( url, { lang : 'kr' } ).then( ( videoInfo ) =>
+            {
+                this.playlist.push(
+                { 
+                    url : url,
+                    info : videoInfo.videoDetails
+                } );
+
+                this.emit( 'added' );
+                return;
+            } );
         }
         else
         {
             const error = new Error( );
-            error.message = `${url} 에서 비디오 ID를 찾을 수 없습니다.`;
+            error.message = `${ url } 에서 비디오 ID를 찾을 수 없습니다.`;
             error.code = 'invalidurl';
             this.emit( 'error', error );
+            return;
         }
     }
 
@@ -138,10 +165,12 @@ class Audio extends EventEmitter
         if( this.player.pause( ) )
         {
             this.emit( 'pause' );
+            return;
         }
         else
         {
             this.emit( 'cannotpause' );
+            return;
         }
     }
 
@@ -150,16 +179,19 @@ class Audio extends EventEmitter
         if( this.player.unpause( ) )
         {
             this.emit( 'unpause' );
+            return;
         }
         else
         {
             this.emit( 'cannotunpause' );
+            return;
         }
     }
 
     skip( )
     {
         this._getNextResource( );
+        return;
     }
 
     stop( )
@@ -167,6 +199,7 @@ class Audio extends EventEmitter
         stopped[ this.id ] = true;
         this.player.stop( );
         this.emit( 'stopped' );
+        return;
     }
 
     reset( )
@@ -174,6 +207,7 @@ class Audio extends EventEmitter
         this.playlist.length = 0;
         this.stop( );
         this.emit( 'reset' );
+        return;
     }
 }
 

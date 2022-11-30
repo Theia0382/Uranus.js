@@ -1,6 +1,6 @@
 {
-  "name": "youtubeplaybot",
-  "version": "1.0.2",
+  "name": "uranus",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Theia0382/YoutubePlayBot.git"
+    "url": "git+https://github.com/Theia0382/Uranus.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Theia0382/YoutubePlayBot/issues"
+    "url": "https://github.com/Theia0382/Uranus/issues"
   },
-  "homepage": "https://github.com/Theia0382/YoutubePlayBot#readme",
+  "homepage": "https://github.com/Theia0382/Uranus#readme",
   "dependencies": {
     "@discordjs/opus": "^0.8.0",
     "@discordjs/voice": "^0.13.0",

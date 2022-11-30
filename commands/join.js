@@ -13,7 +13,7 @@ module.exports =
         
         if ( interaction.member.voice.channelId )
         {
-            await interaction.editReply( `${interaction.member.voice.channel.name}에 참가합니다.` );
+            await interaction.editReply( `${ interaction.member.voice.channel.name }에 참가합니다.` );
 
             const connection = joinVoiceChannel(
             {

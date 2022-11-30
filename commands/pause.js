@@ -14,12 +14,12 @@ module.exports =
 
         audio.once( 'pause', ( ) =>
         {
-            interaction.editReply( `음악 재생을 일시정지했습니다.` )
+            interaction.editReply( '음악 재생을 일시정지했습니다.' );
         } );
 
         audio.once( 'cannotpause', ( ) =>
         {
-            interaction.editReply( `음악 재생 중이 아닙니다.` )
+            interaction.editReply( { content : '음악 재생 중이 아닙니다.', ephemeral : true } );
         } );
 
         audio.pause( );

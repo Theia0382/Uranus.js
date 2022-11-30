@@ -14,7 +14,7 @@ module.exports =
 
         audio.once( 'stopped', ( ) =>
         {
-            interaction.editReply( `음악 재생을 정지했습니다.` )
+            interaction.editReply( '음악 재생을 정지했습니다.' )
         } );
 
         audio.stop( );

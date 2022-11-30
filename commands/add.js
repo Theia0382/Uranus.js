@@ -1,5 +1,7 @@
 const { SlashCommandBuilder } = require( 'discord.js' );
 const Audio = require('../modules/audio');
+const Embed = require( '../modules/embed' );
+
 
 module.exports =
 {
@@ -20,7 +22,11 @@ module.exports =
 
         audio.once( 'added', ( ) =>
         {
-            interaction.editReply( `${url} 이 재생목록에 추가되었습니다.` )
+            const embed = new Embed( ).songInfo( audio.playlist.at( -1 ).info );
+
+            interaction.editReply( { content : '▼ 재생목록에 추가 됨', embeds : [ embed ] } );
+
+            return;
         } );
 
         audio.once( 'error', error =>
@@ -28,8 +34,14 @@ module.exports =
             console.error( `Error: ${error.message}` );
             if ( error.code == 'invalidurl' )
             {
-                interaction.editReply( '올바른 URL이 아닙니다.' );
+                interaction.editReply( { content : '올바른 URL이 아닙니다.', ephemeral : true } );
             }
+            else
+            {
+                interaction.editReply( { content : `알 수 없는 오류\nError: ${ error.message }`, ephemeral : true } );
+            }
+
+            return;
         } );
 
         audio.add( url );

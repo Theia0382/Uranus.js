@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require( 'discord.js' );
 const Audio = require('../modules/audio');
+const Embed = require( '../modules/embed' );
 
 module.exports =
 {
@@ -12,6 +13,8 @@ module.exports =
 
         const audio = new Audio( interaction.guildId );
 
-        interaction.editReply( audio.playlist );
+        const embed = new Embed( ).playlist( audio.playlist );
+
+        await interaction.editReply( { embeds : [ embed ] } );
     }
 };

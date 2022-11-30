@@ -18,7 +18,7 @@ module.exports =
         }
         else
         {
-            await interaction.editReply( '음성 채널에 참가하고 있지 않습니다.' );
+            await interaction.editReply( { content : '음성 채널에 참가하고 있지 않습니다.', ephemeral : true } );
             return;
         }
 

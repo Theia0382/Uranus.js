@@ -14,7 +14,7 @@ module.exports =
 
         audio.once( 'reset', ( ) =>
         {
-            interaction.editReply( `재생 목록을 초기화했습니다.` )
+            interaction.editReply( '재생 목록을 초기화했습니다.' )
         } );
 
         audio.reset( );

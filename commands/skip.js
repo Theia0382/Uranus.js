@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require( 'discord.js' );
 const Audio = require('../modules/audio');
+const Embed = require( '../modules/embed' );
 
 module.exports =
 {
@@ -15,11 +16,18 @@ module.exports =
         if ( !audio.playlist[ 1 ] )
         {
             interaction.editReply( '다음 곡이 없습니다.' );
+            audio.skip( );
+
+            return;
         }
 
         audio.once( 'playing', ( ) =>
         {
-            interaction.editReply( `▼ 현재 재생 중\n${audio.playlist[ 0 ]}` );
+            const embed = new Embed( ).songInfo( audio.playlist[ 0 ].info );
+
+            interaction.editReply( { content : '▼ 현재 재생 중', embeds : [ embed ] } );
+
+            return;
         } );
 
         audio.skip( );
