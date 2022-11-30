@@ -13,8 +13,15 @@ module.exports =
 
         const audio = new Audio( interaction.guildId );
 
+        if ( !audio.playlist[ 0 ] )
+        {
+            await interaction.editReply( '재생목록이 비어있습니다.' );
+            return;
+        }
+
         const embed = new Embed( ).playlist( audio.playlist );
 
         await interaction.editReply( { embeds : [ embed ] } );
+        return;
     }
 };
