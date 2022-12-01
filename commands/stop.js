@@ -12,7 +12,7 @@ module.exports =
 
         const audio = new Audio( interaction.guildId );
 
-        audio.once( 'stopped', ( ) =>
+        audio.once( 'stop', ( ) =>
         {
             interaction.editReply( '음악 재생을 정지했습니다.' )
         } );

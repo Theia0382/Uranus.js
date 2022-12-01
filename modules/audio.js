@@ -1,5 +1,6 @@
 const { createAudioPlayer, createAudioResource, AudioPlayerStatus, StreamType } = require( '@discordjs/voice' );
 const ytdl = require( 'ytdl-core' );
+const ytpl = require( 'ytpl' );
 const fs = require( 'fs' );
 const join = require( 'path' ).join;
 const EventEmitter = require( 'events' );
@@ -65,7 +66,7 @@ class Audio extends EventEmitter
 
         stopped[ this.id ] = false;
 
-        const download = ytdl( this.playlist[ 0 ].url, { filter : format => format.container === 'mp4', quality : 'highestaudio' } );
+        const download = ytdl( this.playlist[ 0 ].video_url, { filter : format => format.container === 'mp4', quality : 'highestaudio' } );
 
         new FfmpegCommand( download )
             .noVideo( )
@@ -79,7 +80,7 @@ class Audio extends EventEmitter
                 const resource = createAudioResource( stream, { inputType : StreamType.OggOpus } );
                 this.player.play( resource );
 
-                this.emit( 'playing' );
+                this.emit( 'play' );
                 return;
             } );
     }
@@ -104,24 +105,64 @@ class Audio extends EventEmitter
     {
         if( url )
         {
-            if ( ytdl.validateURL( url ) )
+            if ( ytpl.validateID( url ) )
+            {
+                ytpl( url, { lang : 'kr' } )
+                    .then( ( playlistInfo ) =>
+                    {
+                        const list = [ ];
+                    
+                        for( const i in playlistInfo.items )
+                        {
+                            ytdl.getBasicInfo( playlistInfo.items[ i ].shortUrl )
+                                .then( ( videoInfo ) =>
+                                {
+                                    list[ i ] = videoInfo.videoDetails;
+                                    
+                                    for( let j = 0; list[ j ]; j++ )
+                                    {
+                                        if ( j == playlistInfo.items.length - 1 )
+                                        {
+                                            this.playlist.unshift( ...list );
+                                        
+                                            this.emit( 'add', playlistInfo.items.length );
+                                        
+                                            this._play( );
+                                        }
+                                    }
+                                } );
+                        }
+                    } )
+                    .catch( ( error ) =>
+                    {
+                        const error = new Error( );
+                        error.message = `${ url } 에서 재생목록 정보를 찾을 수 없습니다.`;
+                        error.code = 'unknownplaylist';
+                        this.emit( 'error', error );
+                    } );
+            }
+            else if ( ytdl.validateURL( url ) )
             {
                 ytdl.getBasicInfo( url, { lang : 'kr' } ).then( ( videoInfo ) =>
                 {
-                    this.playlist.unshift(
-                    { 
-                        url : url,
-                        info : videoInfo.videoDetails
-                    } );
+                    this.playlist.unshift( videoInfo.videoDetails );
+
+                    this.emit( 'add', 1 );
 
                     this._play( );
-                    return;
+                } )
+                .catch( ( error ) =>
+                {
+                    const error = new Error( );
+                    error.message = `${ url } 에서 비디오 정보를 찾을 수 없습니다.`;
+                    error.code = 'unknownvideo';
+                    this.emit( 'error', error );
                 } );
             }
             else
             {
                 const error = new Error( );
-                error.message = `${ url } 에서 비디오 ID를 찾을 수 없습니다.`;
+                error.message = `${ url } 은 올바른 URL이 아닙니다.`;
                 error.code = 'invalidurl';
                 this.emit( 'error', error );
                 return;
@@ -130,30 +171,65 @@ class Audio extends EventEmitter
         else
         {
             this._play( );
-            return;
         }
     }
 
     add( url )
     {
-        if ( ytdl.validateURL( url ) )
+        if ( ytpl.validateID( url ) )
         {
-            ytdl.getBasicInfo( url, { lang : 'kr' } ).then( ( videoInfo ) =>
-            {
-                this.playlist.push(
-                { 
-                    url : url,
-                    info : videoInfo.videoDetails
-                } );
+            ytpl( url, { lang : 'kr' } )
+                .then( ( playlistInfo ) =>
+                {
+                    const list = [ ];
 
-                this.emit( 'added' );
-                return;
-            } );
+                    for( const i in playlistInfo.items )
+                    {
+                        ytdl.getBasicInfo( playlistInfo.items[ i ].shortUrl ).then( ( videoInfo ) =>
+                        {
+                            list[ i ] = videoInfo.videoDetails;
+                            
+                            for( let j = 0; list[ j ]; j++ )
+                            {
+                                if ( j == playlistInfo.items.length - 1 )
+                                {
+                                    this.playlist.push( ...list );
+
+                                    this.emit( 'add', playlistInfo.items.length );
+                                }
+                            }
+                        } );
+                    }
+                } )                
+                .catch( ( error ) =>
+                {
+                    const error = new Error( );
+                    error.message = `${ url } 에서 재생목록 정보를 찾을 수 없습니다.`;
+                    error.code = 'unknownplaylist';
+                    this.emit( 'error', error );
+                } );
+        }
+        else if ( ytdl.validateURL( url ) )
+        {
+            ytdl.getBasicInfo( url, { lang : 'kr' } )
+                .then( ( videoInfo ) =>
+                {
+                    this.playlist.push( videoInfo.videoDetails );
+
+                    this.emit( 'add', 1 );
+                } )
+                .catch( ( error ) =>
+                {
+                    const error = new Error( );
+                    error.message = `${ url } 에서 비디오 정보를 찾을 수 없습니다.`;
+                    error.code = 'unknownvideo';
+                    this.emit( 'error', error );
+                } );
         }
         else
         {
             const error = new Error( );
-            error.message = `${ url } 에서 비디오 ID를 찾을 수 없습니다.`;
+            error.message = `${ url } 은 올바른 URL이 아닙니다.`;
             error.code = 'invalidurl';
             this.emit( 'error', error );
             return;
@@ -165,12 +241,10 @@ class Audio extends EventEmitter
         if( this.player.pause( ) )
         {
             this.emit( 'pause' );
-            return;
         }
         else
         {
             this.emit( 'cannotpause' );
-            return;
         }
     }
 
@@ -179,27 +253,23 @@ class Audio extends EventEmitter
         if( this.player.unpause( ) )
         {
             this.emit( 'unpause' );
-            return;
         }
         else
         {
             this.emit( 'cannotunpause' );
-            return;
         }
     }
 
     skip( )
     {
         this._getNextResource( );
-        return;
     }
 
     stop( )
     {
         stopped[ this.id ] = true;
         this.player.stop( );
-        this.emit( 'stopped' );
-        return;
+        this.emit( 'stop' );
     }
 
     reset( )
@@ -207,7 +277,6 @@ class Audio extends EventEmitter
         this.playlist.length = 0;
         this.stop( );
         this.emit( 'reset' );
-        return;
     }
 }
 

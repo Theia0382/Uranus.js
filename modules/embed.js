@@ -25,7 +25,7 @@ class Embed
         let description = '';
         for ( const i in playlist )
         {
-            description += `**${ parseInt( i ) + 1 }.** ${ playlist[ i ].info.title }\n\n`;
+            description += `**${ parseInt( i ) + 1 }.** ${ playlist[ i ].title }\n\n`;
         }
 
         const embed = new EmbedBuilder( )

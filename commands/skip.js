@@ -21,9 +21,9 @@ module.exports =
             return;
         }
 
-        audio.once( 'playing', ( ) =>
+        audio.once( 'play', ( ) =>
         {
-            const embed = new Embed( ).songInfo( audio.playlist[ 0 ].info );
+            const embed = new Embed( ).songInfo( audio.playlist[ 0 ] );
 
             interaction.editReply( { content : '▼ 현재 재생 중', embeds : [ embed ] } );
 

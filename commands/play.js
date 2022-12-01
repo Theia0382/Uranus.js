@@ -39,13 +39,21 @@ module.exports =
         const audio = new Audio( interaction.guildId );
         connection.subscribe( audio.player );
         
-        audio.once( 'playing', ( ) =>
+        audio.once( 'play', ( ) =>
         {
-            const embed = new Embed( ).songInfo( audio.playlist[ 0 ].info );
+            const embed = new Embed( ).songInfo( audio.playlist[ 0 ] );
 
             interaction.editReply( { content : '▼ 현재 재생 중', embeds : [ embed ] } );
 
             return;
+        } );
+
+        audio.once( 'add', length =>
+        {
+            if ( length > 1 )
+            {
+                interaction.channel.send( `재생목록에 ${length}곡 추가됨.` )
+            }
         } );
 
         audio.once( 'error', error =>
@@ -54,6 +62,14 @@ module.exports =
             if ( error.code == 'invalidurl' )
             {
                 interaction.editReply( { content: '올바른 URL이 아닙니다.', ephemeral : true } );
+            }
+            else if ( error.code == 'unknownvideo' )
+            {
+                interaction.editReply( { content: '알 수 없는 비디오입니다.', ephemeral : true } );
+            }
+            else if ( error.code == 'unknownplaylist' )
+            {
+                interaction.editReply( { content: '알 수 없는 재생목록입니다.', ephemeral : true } );
             }
             else if ( error.code == 'noplaylist' )
             {

@@ -10,7 +10,7 @@ module.exports =
         .setDescription( '재생목록에 곡을 추가합니다.' )
         .addStringOption( option => option
             .setName( 'url' )
-            .setDescription( 'Youtube URL을 입력해주세요' )
+            .setDescription( 'Youtube URL을 입력해주세요.' )
             .setRequired( true ) ),
     async execute( interaction )
     {
@@ -20,13 +20,20 @@ module.exports =
 
         const audio = new Audio( interaction.guildId );
 
-        audio.once( 'added', ( ) =>
+        audio.once( 'add', ( ) =>
         {
-            const embed = new Embed( ).songInfo( audio.playlist.at( -1 ).info );
+            if ( length > 1 )
+            {
+                interaction.editReply( `재생목록에 ${length}곡 추가됨.` )
+            }
+            else
+            {
+                const embed = new Embed( ).songInfo( audio.playlist.at( -1 ) );
 
-            interaction.editReply( { content : '▼ 재생목록에 추가 됨', embeds : [ embed ] } );
+                interaction.editReply( { content : '▼ 재생목록에 추가됨', embeds : [ embed ] } );
 
-            return;
+                return;
+            }
         } );
 
         audio.once( 'error', error =>
@@ -35,6 +42,14 @@ module.exports =
             if ( error.code == 'invalidurl' )
             {
                 interaction.editReply( { content : '올바른 URL이 아닙니다.', ephemeral : true } );
+            }
+            else if ( error.code == 'unknownvideo' )
+            {
+                interaction.editReply( { content: '알 수 없는 비디오입니다.', ephemeral : true } );
+            }
+            else if ( error.code == 'unknownplaylist' )
+            {
+                interaction.editReply( { content: '알 수 없는 재생목록입니다.', ephemeral : true } );
             }
             else
             {
