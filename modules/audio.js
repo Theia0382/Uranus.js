@@ -133,7 +133,7 @@ class Audio extends EventEmitter
                                 } );
                         }
                     } )
-                    .catch( ( error ) =>
+                    .catch( ( ) =>
                     {
                         const error = new Error( );
                         error.message = `${ url } 에서 재생목록 정보를 찾을 수 없습니다.`;
@@ -151,7 +151,7 @@ class Audio extends EventEmitter
 
                     this._play( );
                 } )
-                .catch( ( error ) =>
+                .catch( ( ) =>
                 {
                     const error = new Error( );
                     error.message = `${ url } 에서 비디오 정보를 찾을 수 없습니다.`;
@@ -201,7 +201,7 @@ class Audio extends EventEmitter
                         } );
                     }
                 } )                
-                .catch( ( error ) =>
+                .catch( ( ) =>
                 {
                     const error = new Error( );
                     error.message = `${ url } 에서 재생목록 정보를 찾을 수 없습니다.`;
@@ -218,7 +218,7 @@ class Audio extends EventEmitter
 
                     this.emit( 'add', 1 );
                 } )
-                .catch( ( error ) =>
+                .catch( ( ) =>
                 {
                     const error = new Error( );
                     error.message = `${ url } 에서 비디오 정보를 찾을 수 없습니다.`;

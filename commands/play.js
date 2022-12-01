@@ -48,7 +48,7 @@ module.exports =
             return;
         } );
 
-        audio.once( 'add', length =>
+        audio.once( 'add', ( length ) =>
         {
             if ( length > 1 )
             {
@@ -56,7 +56,7 @@ module.exports =
             }
         } );
 
-        audio.once( 'error', error =>
+        audio.once( 'error', ( error ) =>
         {
             console.error( `Error: ${ error.message }` );
             if ( error.code == 'invalidurl' )

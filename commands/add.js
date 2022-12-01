@@ -20,7 +20,7 @@ module.exports =
 
         const audio = new Audio( interaction.guildId );
 
-        audio.once( 'add', ( ) =>
+        audio.once( 'add', ( length ) =>
         {
             if ( length > 1 )
             {
@@ -36,7 +36,7 @@ module.exports =
             }
         } );
 
-        audio.once( 'error', error =>
+        audio.once( 'error', ( error ) =>
         {
             console.error( `Error: ${error.message}` );
             if ( error.code == 'invalidurl' )
