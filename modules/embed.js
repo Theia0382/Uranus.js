@@ -18,7 +18,7 @@ class Embed
                     url : info.author.channel_url
                 } )
                 .addFields(
-                    { name : '길이', value : `${ parseInt( parseInt( info.lengthSeconds ) / 60 ) }:${ parseInt( info.lengthSeconds ) % 60 }`, inline : true },
+                    { name : '길이', value : `${ parseInt( parseInt( info.lengthSeconds ) / 60 ) }:${ new String( ( parseInt( info.lengthSeconds ) % 60 ) ).padStart( 2, '0' ) }`, inline : true },
                     { name : '업로드 날짜', value : info.uploadDate, inline : true },
                     { name : '조회수', value : info.viewCount, inline : true }
                 )

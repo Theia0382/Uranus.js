@@ -53,8 +53,6 @@ class Audio extends EventEmitter
             };
         }
 
-        console.log( status[ guildId ] );
-
         return status[ guildId ];
     }
 
