@@ -5,24 +5,23 @@ const Embed = require( '../modules/embed' );
 module.exports =
 {
     data : new SlashCommandBuilder( )
-        .setName( 'playlist' )
-        .setDescription( '재생목록을 확인합니다.' ),
+        .setName( 'nowplaying' )
+        .setDescription( '현재 재생 중인 음악의 정보를 표시합니다.' ),
     async execute( interaction )
     {
         await interaction.deferReply( );
 
         const audio = new Audio( interaction.guildId );
 
-        if ( audio.playlist[ 0 ] )
+        if ( audio.status.playing === true )
         {
-            const embed = new Embed( ).playlist( audio.playlist );
+            const embed = new Embed( ).songInfo( audio.playlist[ 0 ], true );
 
             await interaction.editReply( { embeds : [ embed ] } );
         }
         else
         {
-            await interaction.editReply( '재생목록이 비어있습니다.' );
+            await interaction.editReply( '재생 중인 음악이 없습니다.' );
         }
-        
     }
 };

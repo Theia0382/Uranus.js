@@ -31,8 +31,6 @@ module.exports =
                 const embed = new Embed( ).songInfo( audio.playlist.at( -1 ) );
 
                 interaction.editReply( { content : '▼ 재생목록에 추가됨', embeds : [ embed ] } );
-
-                return;
             }
         } );
 
@@ -55,8 +53,6 @@ module.exports =
             {
                 interaction.editReply( { content : `알 수 없는 오류\nError: ${ error.message }`, ephemeral : true } );
             }
-
-            return;
         } );
 
         audio.add( url );

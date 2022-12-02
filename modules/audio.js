@@ -10,20 +10,20 @@ new FfmpegCommand( ).setFfmpegPath( join( __dirname, '../node_modules/ffmpeg-sta
 
 const audioPlayer = [ ];
 const playlist = [ ];
-const stopped = [ ];
+const status = [ ];
 
 
 class Audio extends EventEmitter
 {
     __getAudioPlayer( guildId )
     {
-        if ( !audioPlayer[ guildId ] )
+        if ( audioPlayer[ guildId ] === undefined )
         {
             audioPlayer[ guildId ] = createAudioPlayer( );
 
             audioPlayer[ guildId ].on( AudioPlayerStatus.Idle, ( ) =>
             {
-                if( !stopped[ this.id ] )
+                if( status[ guildId ].playing === true )
                 {
                     this._getNextResource( );
                 }
@@ -35,12 +35,27 @@ class Audio extends EventEmitter
     
     __getPlaylist( guildId )
     {
-        if ( !playlist[ guildId ] )
+        if ( playlist[ guildId ] === undefined )
         {
             playlist[ guildId ] = [ ];
         }
     
         return playlist[ guildId ];
+    }
+
+    __getStatus( guildId )
+    {
+        if ( status[ guildId ] === undefined )
+        {
+            status[ guildId ] =
+            {
+                playing : false
+            };
+        }
+
+        console.log( status[ guildId ] );
+
+        return status[ guildId ];
     }
 
 
@@ -50,7 +65,7 @@ class Audio extends EventEmitter
         this.id = guildId;
         this.player = this.__getAudioPlayer( guildId );
         this.playlist = this.__getPlaylist( guildId );
-        stopped[ this.id ] = false;
+        this.status = this.__getStatus( guildId );
     }
 
     _play( )
@@ -64,21 +79,21 @@ class Audio extends EventEmitter
             return;
         }
 
-        stopped[ this.id ] = false;
-
         const download = ytdl( this.playlist[ 0 ].video_url, { filter : format => format.container === 'mp4', quality : 'highestaudio' } );
 
         new FfmpegCommand( download )
             .noVideo( )
-            .audioCodec('libopus')
-            .audioFilters('volume=0.1')
-            .format('ogg')
+            .audioCodec( 'libopus' )
+            .audioFilters( 'volume=0.1' )
+            .format( 'ogg' )
             .pipe( fs.createWriteStream( join( __dirname, `../temp/${ this.id }.ogg` ) ) )
             .on( 'finish', ( ) =>
             {
                 const stream = fs.createReadStream( join( __dirname, `../temp/${ this.id }.ogg` ) );
                 const resource = createAudioResource( stream, { inputType : StreamType.OggOpus } );
                 this.player.play( resource );
+
+                this.status.playing = true;
 
                 this.emit( 'play' );
                 return;
@@ -92,12 +107,10 @@ class Audio extends EventEmitter
         if( this.playlist[ 0 ] )
         {
             this._play( );
-            return;
         }
         else
         {
             this.stop( );
-            return;
         }
     }
 
@@ -267,7 +280,7 @@ class Audio extends EventEmitter
 
     stop( )
     {
-        stopped[ this.id ] = true;
+        this.status.playing = false;
         this.player.stop( );
         this.emit( 'stop' );
     }
