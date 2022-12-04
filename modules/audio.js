@@ -118,19 +118,19 @@ class Audio extends EventEmitter
         {
             if ( ytpl.validateID( url ) )
             {
-                ytpl( url, { lang : 'kr' } )
+                ytpl( url, { limit : 10000, hl : 'ko' } )
                     .then( ( playlistInfo ) =>
                     {
                         const list = [ ];
                     
                         for( const i in playlistInfo.items )
                         {
-                            ytdl.getBasicInfo( playlistInfo.items[ i ].shortUrl )
+                            ytdl.getBasicInfo( playlistInfo.items[ i ].shortUrl, { lang : 'ko' } )
                                 .then( ( videoInfo ) =>
                                 {
                                     list[ i ] = videoInfo.videoDetails;
                                     
-                                    for( let j = 0; list[ j ]; j++ )
+                                    for( let j = 0; list[ j ] !== undefined; j++ )
                                     {
                                         if ( j == playlistInfo.items.length - 1 )
                                         {
@@ -154,7 +154,7 @@ class Audio extends EventEmitter
             }
             else if ( ytdl.validateURL( url ) )
             {
-                ytdl.getBasicInfo( url, { lang : 'kr' } ).then( ( videoInfo ) =>
+                ytdl.getBasicInfo( url, { lang : 'ko' } ).then( ( videoInfo ) =>
                 {
                     this.playlist.unshift( videoInfo.videoDetails );
 
@@ -189,7 +189,7 @@ class Audio extends EventEmitter
     {
         if ( ytpl.validateID( url ) )
         {
-            ytpl( url, { lang : 'kr' } )
+            ytpl( url, { lang : 'ko' } )
                 .then( ( playlistInfo ) =>
                 {
                     const list = [ ];
@@ -222,7 +222,7 @@ class Audio extends EventEmitter
         }
         else if ( ytdl.validateURL( url ) )
         {
-            ytdl.getBasicInfo( url, { lang : 'kr' } )
+            ytdl.getBasicInfo( url, { lang : 'ko' } )
                 .then( ( videoInfo ) =>
                 {
                     this.playlist.push( videoInfo.videoDetails );
