@@ -189,7 +189,7 @@ class Audio extends EventEmitter
     {
         if ( ytpl.validateID( url ) )
         {
-            ytpl( url, { lang : 'ko' } )
+            ytpl( url, { limit : 10000, hl : 'ko' } )
                 .then( ( playlistInfo ) =>
                 {
                     const list = [ ];
