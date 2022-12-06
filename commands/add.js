@@ -11,12 +11,16 @@ module.exports =
         .addStringOption( option => option
             .setName( 'url' )
             .setDescription( 'Youtube URL을 입력해주세요.' )
-            .setRequired( true ) ),
+            .setRequired( true ) )
+        .addBooleanOption( option => option
+            .setName( 'shuffle' )
+            .setDescription( '재생목록을 추가할 경우 셔플 여부를 입력해주세요.' ) ),
     async execute( interaction )
     {
         await interaction.deferReply( );
 
         const url = interaction.options.getString( 'url' );
+        const shuffle = interaction.options.getBoolean( 'shuffle' );
 
         const audio = new Audio( interaction.guildId );
 
@@ -55,6 +59,6 @@ module.exports =
             }
         } );
 
-        audio.add( url );
+        audio.add( url, shuffle );
     }
 };

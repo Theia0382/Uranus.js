@@ -10,7 +10,7 @@ module.exports =
         .setDescription( '음악을 재생합니다.' )
         .addStringOption( option => option
             .setName( 'url' )
-            .setDescription( 'Youtube URL을 입력해주세요.' ) ),
+            .setDescription( '곡을 추가할 경우 Youtube URL을 입력해주세요.' ) ),
     async execute( interaction )
     {
         await interaction.deferReply( );

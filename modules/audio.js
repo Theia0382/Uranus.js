@@ -185,7 +185,7 @@ class Audio extends EventEmitter
         }
     }
 
-    add( url )
+    add( url, shuffle )
     {
         if ( ytpl.validateID( url ) )
         {
@@ -204,6 +204,15 @@ class Audio extends EventEmitter
                             {
                                 if ( j == playlistInfo.items.length - 1 )
                                 {
+                                    if ( shuffle )
+                                    {
+                                        for ( let index = list.length - 1; index > 0; index-- )
+                                        {
+                                            const random = Math.floor( Math.random( ) * ( index + 1 ) );
+                                            [ list[ index ], list[ random ] ] = [ list[ random ], list[ index ] ];
+                                        }
+                                    }
+
                                     this.playlist.push( ...list );
 
                                     this.emit( 'add', playlistInfo.items.length );
@@ -274,6 +283,7 @@ class Audio extends EventEmitter
     skip( )
     {
         this._getNextResource( );
+        this.emit( 'skip' );
     }
 
     stop( )
@@ -281,6 +291,17 @@ class Audio extends EventEmitter
         this.status.playing = false;
         this.player.stop( );
         this.emit( 'stop' );
+    }
+
+    shuffle( )
+    {
+        for ( let index = this.playlist.length - 1; index > 0; index-- )
+        {
+            const random = Math.floor( Math.random( ) * ( index + 1 ) );
+            [ this.playlist[ index ], this.playlist[ random ] ] = [ this.playlist[ random ], this.playlist[ index ] ];
+        }
+
+        this.emit(  'shuffle' );
     }
 
     reset( )
