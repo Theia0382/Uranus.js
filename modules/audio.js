@@ -295,10 +295,22 @@ class Audio extends EventEmitter
 
     shuffle( )
     {
+        let firstSong;
+
+        if ( this.status.playing === true )
+        {
+            firstSong = this.playlist.shift( );
+        }
+
         for ( let index = this.playlist.length - 1; index > 0; index-- )
         {
             const random = Math.floor( Math.random( ) * ( index + 1 ) );
             [ this.playlist[ index ], this.playlist[ random ] ] = [ this.playlist[ random ], this.playlist[ index ] ];
+        }
+
+        if ( this.status.playing === true )
+        {
+            this.playlist.unshift( firstSong );
         }
 
         this.emit(  'shuffle' );
