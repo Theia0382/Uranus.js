@@ -48,9 +48,14 @@ class Embed
     playlist( playlist )
     {
         let description = '';
-        for ( const i in playlist )
+        for ( let i = 0; playlist[ i ]; i++ )
         {
-            description += `**${ parseInt( i ) + 1 }.** ${ playlist[ i ].title }\n\n`;
+            description += `**${ i + 1 }.** ${ playlist[ i ].title }\n\n`;
+            if ( description.length > 3600 )
+            {
+                description += `**외 ${ playlist.length - i }곡**`
+                break;
+            }
         }
 
         const embed = new EmbedBuilder( )

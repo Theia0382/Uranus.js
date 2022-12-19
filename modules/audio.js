@@ -28,6 +28,12 @@ class Audio extends EventEmitter
                     this._getNextResource( );
                 }
             } );
+
+            audioPlayer[ guildId ].on( 'error', error =>
+            {
+                console.error( `Error: ${ error.message } with resource ${ error.resource.metadata.title }` );
+                this._getNextResource( );
+            } );
         }
         
         return audioPlayer[ guildId ];
@@ -84,18 +90,19 @@ class Audio extends EventEmitter
             .audioCodec( 'libopus' )
             .audioFilters( 'volume=0.1' )
             .format( 'ogg' )
-            .pipe( fs.createWriteStream( join( __dirname, `../temp/${ this.id }.ogg` ) ) )
-            .on( 'finish', ( ) =>
-            {
-                const stream = fs.createReadStream( join( __dirname, `../temp/${ this.id }.ogg` ) );
-                const resource = createAudioResource( stream, { inputType : StreamType.OggOpus } );
-                this.player.play( resource );
+            .pipe(
+                fs.createWriteStream( join( __dirname, `../temp/${ this.id }.ogg` ) )
+                .on( 'finish', ( ) =>
+                {
+                    const stream = fs.createReadStream( join( __dirname, `../temp/${ this.id }.ogg` ) );
+                    const resource = createAudioResource( stream, { inputType : StreamType.OggOpus } );
+                    this.player.play( resource );
 
-                this.status.playing = true;
+                    this.status.playing = true;
 
-                this.emit( 'play' );
-                return;
-            } );
+                    this.emit( 'play' );
+                    return;
+                } ) );
     }
 
     _getNextResource( )
@@ -313,7 +320,7 @@ class Audio extends EventEmitter
             this.playlist.unshift( firstSong );
         }
 
-        this.emit(  'shuffle' );
+        this.emit( 'shuffle' );
     }
 
     reset( )

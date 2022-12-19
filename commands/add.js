@@ -28,7 +28,7 @@ module.exports =
         {
             if ( length > 1 )
             {
-                interaction.editReply( `재생목록에 ${length}곡 추가됨.` )
+                interaction.editReply( `재생목록에 ${length}곡 추가됨.` );
             }
             else
             {
