@@ -31,7 +31,7 @@ class Audio extends EventEmitter
 
             audioPlayer[ guildId ].on( 'error', error =>
             {
-                console.error( `Error: ${ error.message } with resource ${ error.resource.metadata.title }` );
+                console.error( `Error: ${ error.message } with ${ playlist[ guildId ][ 0 ].video_url }` );
                 this._getNextResource( );
             } );
         }
