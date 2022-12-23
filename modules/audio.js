@@ -83,7 +83,11 @@ class Audio extends EventEmitter
             return;
         }
 
-        const download = ytdl( this.playlist[ 0 ].video_url, { filter : format => format.container === 'mp4', quality : 'highestaudio' } );
+        const download = ytdl( this.playlist[ 0 ].video_url, { filter : format => format.container === 'mp4', quality : 'highestaudio' } )
+            .on( 'error', ( error ) =>
+            {
+                console.log( `ytdl Error: ${ error.message }` );
+            } );
 
         new FfmpegCommand( download )
             .noVideo( )
@@ -102,7 +106,11 @@ class Audio extends EventEmitter
 
                     this.emit( 'play' );
                     return;
-                } ) );
+                } ) )
+            .on( 'error', ( error ) =>
+            {
+                console.log( `Ffmpeg Error: ${ error.message }` );
+            } );
     }
 
     _getNextResource( )

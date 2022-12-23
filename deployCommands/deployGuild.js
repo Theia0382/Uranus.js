@@ -1,6 +1,6 @@
+require( 'dotenv' ).config( { path: '../.env' } );
+
 const { REST, Routes } = require( 'discord.js' );
-const { clientId, guildId } = require( '../config.json' );
-const { token } = require( '../config.json' );
 const fs = require( 'node:fs' );
 
 const commands = [ ];
@@ -12,7 +12,7 @@ for ( const file of commandFiles )
     commands.push(command.data.toJSON( ) );
 }
 
-const rest = new REST( { version : '10' } ).setToken( token );
+const rest = new REST( { version : '10' } ).setToken( process.env.TOKEN );
 
 ( async ( ) =>
 {
@@ -20,7 +20,7 @@ const rest = new REST( { version : '10' } ).setToken( token );
     {
         console.log( `${commands.length} 개의 명령 새로고침 시작`)
 
-        await rest.put( Routes.applicationGuildCommands( clientId, guildId ), { body : commands } );
+        await rest.put( Routes.applicationGuildCommands( process.env.ID, process.env.GUILDID ), { body : commands } );
 
         console.log( `${commands.length} 개의 명령 새로고침 완료` )
     }

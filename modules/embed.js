@@ -1,6 +1,5 @@
 const { EmbedBuilder } = require( 'discord.js' );
 
-
 class Embed
 {
     songInfo( info, detail = false )

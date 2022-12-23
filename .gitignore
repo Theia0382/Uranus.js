@@ -103,7 +103,4 @@ dist
 # TernJS port file
 .tern-port
 
-config.json
 temp
-
-important.txt

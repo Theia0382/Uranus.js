@@ -1,10 +1,9 @@
+require( 'dotenv' ).config( { path: '../.env' } );
 const { REST, Routes } = require( 'discord.js' );
-const { clientId, guildId } = require( '../config.json' );
-const { token } = require( '../config.json' );
 
 const commands = [ ];
 
-const rest = new REST( { version : '10' } ).setToken( token );
+const rest = new REST( { version : '10' } ).setToken( process.env.TOKEN );
 
 ( async ( ) =>
 {
@@ -12,7 +11,7 @@ const rest = new REST( { version : '10' } ).setToken( token );
     {
         console.log( '봇 서버 명령 삭제 시도' );
 
-        await rest.put( Routes.applicationGuildCommands( clientId, guildId ), { body : commands } );
+        await rest.put( Routes.applicationGuildCommands( process.env.ID, process.env.GUILDID ), { body : commands } );
 
         console.log( '봇 서버 명령 삭제 성공');
     }
