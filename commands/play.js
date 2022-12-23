@@ -56,7 +56,7 @@ module.exports =
             }
         } );
 
-        audio.once( 'error', ( error ) =>
+        audio.on( 'error', ( error ) =>
         {
             console.error( `Error: ${ error.message }` );
             if ( error.code == 'invalidurl' )

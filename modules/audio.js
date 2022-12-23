@@ -89,28 +89,29 @@ class Audio extends EventEmitter
                 console.log( `ytdl Error: ${ error.message }` );
             } );
 
-        new FfmpegCommand( download )
+        const ffmpeg = new FfmpegCommand( download )
             .noVideo( )
             .audioCodec( 'libopus' )
             .audioFilters( 'volume=0.1' )
-            .format( 'ogg' )
-            .pipe(
-                fs.createWriteStream( join( __dirname, `../temp/${ this.id }.ogg` ) )
-                .on( 'finish', ( ) =>
-                {
-                    const stream = fs.createReadStream( join( __dirname, `../temp/${ this.id }.ogg` ) );
-                    const resource = createAudioResource( stream, { inputType : StreamType.OggOpus } );
-                    this.player.play( resource );
+            .format( 'ogg' );
 
-                    this.status.playing = true;
+        ffmpeg.on( 'error', ( error ) =>
+        {
+            console.log( `Ffmpeg Error: ${ error.message }` );
+        } );
 
-                    this.emit( 'play' );
-                    return;
-                } ) )
-            .on( 'error', ( error ) =>
+        ffmpeg.pipe( fs.createWriteStream( join( __dirname, `../temp/${ this.id }.ogg` ) )
+            .on( 'finish', ( ) =>
             {
-                console.log( `Ffmpeg Error: ${ error.message }` );
-            } );
+                const stream = fs.createReadStream( join( __dirname, `../temp/${ this.id }.ogg` ) );
+                const resource = createAudioResource( stream, { inputType : StreamType.OggOpus } );
+                this.player.play( resource );
+
+                this.status.playing = true;
+
+                this.emit( 'play' );
+                return;
+            } ) );
     }
 
     _getNextResource( )
@@ -156,6 +157,13 @@ class Audio extends EventEmitter
                                             this._play( );
                                         }
                                     }
+                                } )
+                                .catch( ( ) =>
+                                {
+                                    const error = new Error( );
+                                    error.message = `${ url } 의 재생목록 중 일부 비디오 정보를 찾을 수 없습니다.`;
+                                    error.code = 'unknownvideo';
+                                    this.emit( 'error', error );
                                 } );
                         }
                     } )
@@ -211,29 +219,37 @@ class Audio extends EventEmitter
 
                     for( const i in playlistInfo.items )
                     {
-                        ytdl.getBasicInfo( playlistInfo.items[ i ].shortUrl ).then( ( videoInfo ) =>
-                        {
-                            list[ i ] = videoInfo.videoDetails;
-                            
-                            for( let j = 0; list[ j ]; j++ )
+                        ytdl.getBasicInfo( playlistInfo.items[ i ].shortUrl )
+                            .then( ( videoInfo ) =>
                             {
-                                if ( j == playlistInfo.items.length - 1 )
+                                list[ i ] = videoInfo.videoDetails;
+                                
+                                for( let j = 0; list[ j ]; j++ )
                                 {
-                                    if ( shuffle )
+                                    if ( j == playlistInfo.items.length - 1 )
                                     {
-                                        for ( let index = list.length - 1; index > 0; index-- )
+                                        if ( shuffle )
                                         {
-                                            const random = Math.floor( Math.random( ) * ( index + 1 ) );
-                                            [ list[ index ], list[ random ] ] = [ list[ random ], list[ index ] ];
+                                            for ( let index = list.length - 1; index > 0; index-- )
+                                            {
+                                                const random = Math.floor( Math.random( ) * ( index + 1 ) );
+                                                [ list[ index ], list[ random ] ] = [ list[ random ], list[ index ] ];
+                                            }
                                         }
+
+                                        this.playlist.push( ...list );
+
+                                        this.emit( 'add', playlistInfo.items.length );
                                     }
-
-                                    this.playlist.push( ...list );
-
-                                    this.emit( 'add', playlistInfo.items.length );
                                 }
-                            }
-                        } );
+                            } )
+                            .catch( ( ) =>
+                            {
+                                const error = new Error( );
+                                error.message = `${ url } 의 재생목록 중 일부 비디오 정보를 찾을 수 없습니다.`;
+                                error.code = 'unknownvideo';
+                                this.emit( 'error', error );
+                            } );
                     }
                 } )                
                 .catch( ( ) =>
